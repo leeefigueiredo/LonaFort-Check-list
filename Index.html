@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checklist de Separação</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #1c1c1c;
+      color: white;
+      padding: 30px;
+    }
+    .container {
+      background: #2c2c2c;
+      border-radius: 10px;
+      padding: 30px;
+      max-width: 700px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(255,255,255,0.1);
+    }
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: white;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 16px;
+      background: #333;
+      color: white;
+      border: 1px solid #555;
+    }
+    button {
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .print-button {
+      background: #007bff;
+      color: white;
+      border: none;
+      width: auto;
+      padding: 10px 20px;
+      margin-left: 10px;
+      border-radius: 5px;
+    }
+    .add-button {
+      background: #28a745;
+      color: white;
+      border: none;
+      width: auto;
+      padding: 10px 20px;
+      border-radius: 5px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+      color: white;
+    }
+    table, th, td {
+      border: 1px solid #666;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #3a3a3a;
+      color: white;
+    }
+    .titulo-checklist {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 22px;
+      text-align: center;
+      font-weight: bold;
+      margin-top: 40px;
+      margin-bottom: 10px;
+    }
+    .data-envio {
+      text-align: center;
+      font-weight: bold;
+      color: white;
+      margin-bottom: 10px;
+    }
+
+    .coletas-color { color: #FFD700; }
+    .correios-color { color: orange; }
+    .flex-color { color: #006400; }
+    .full-color { color: #3399FF; }
+
+    @media print {
+      * {
+        background: #1c1c1c !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      table, th, td {
+        border: 1px solid #888;
+        color: white !important;
+      }
+      th {
+        background-color: #3a3a3a !important;
+        color: white !important;
+      }
+      body.coletas .titulo-checklist {
+        color: #FFD700 !important;
+      }
+      body.correios .titulo-checklist {
+        color: orange !important;
+      }
+      body.flex .titulo-checklist {
+        color: #006400 !important;
+      }
+      body.full .titulo-checklist {
+        color: #3399FF !important;
+      }
+      .data-envio {
+        background: #1c1c1c !important;
+        color: white !important;
+        font-weight: bold !important;
+        padding: 10px;
+      }
+      body, html {
+        background: #1c1c1c !important;
+      }
+      .container {
+        background: #1c1c1c !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="checklist-container">
+    <div class="no-print">
+      <h1>Checklist de Separação - LONAFORT</h1>
+
+      <label>Tipo de Entrega:</label>
+      <select id="tipoEntrega" onchange="atualizarEntrega()">
+        <option value="">Selecione</option>
+        <option value="COLETAS">COLETAS</option>
+        <option value="CORREIOS">CORREIOS</option>
+        <option value="FLEX">FLEX</option>
+        <option value="FULL">FULL</option>
+      </select>
+
+      <label>Nome do Produto:</label>
+      <input type="text" id="nomeProduto" placeholder="Ex: Lona PB 10x12">
+
+      <label>Digite o SKU (opcional):</label>
+      <input type="text" id="sku" placeholder="Ex: LONA-10x14">
+
+      <label>Digite a Quantidade:</label>
+      <input type="number" id="quantidade" placeholder="Ex: 3">
+
+      <button class="add-button" onclick="adicionarItem()">Adicionar ao Checklist</button>
+      <button class="print-button" onclick="window.print()">Imprimir Checklist</button>
+    </div>
+
+    <div class="data-envio" id="dataEnvio"></div>
+    <div class="titulo-checklist" id="tipoSelecionado">📦 Separação Mercado Livre</div>
+
+    <table id="checklist">
+      <thead>
+        <tr>
+          <th>✔</th>
+          <th>Produto</th>
+          <th>Quantidade</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const produtos = {
+      "LONA-10x14": "Lona dupla face preta e branca 10x14m 200 micras",
+      "BIDIM-4M": "Manta De Bidim Geotextil 4m² 2,30 x 2,00 Para Jardins Drenagem",
+      "LONA-8x6": "Lona dupla face preta e branca 200 micras 8x6m"
+    };
+
+    function adicionarItem() {
+      const sku = document.getElementById("sku").value.trim().toUpperCase();
+      const nomeProdutoManual = document.getElementById("nomeProduto").value.trim();
+      const quantidade = document.getElementById("quantidade").value;
+
+      let produto = "";
+
+      if (sku && produtos[sku]) {
+        produto = produtos[sku];
+      } else if (nomeProdutoManual) {
+        produto = nomeProdutoManual;
+      } else {
+        alert("Por favor, preencha o nome do produto ou insira um SKU válido.");
+        return;
+      }
+
+      const tbody = document.querySelector("#checklist tbody");
+      const row = tbody.insertRow();
+
+      const cellCheck = row.insertCell(0);
+      const cellProduto = row.insertCell(1);
+      const cellQuantidade = row.insertCell(2);
+
+      cellCheck.innerHTML = "☐";
+      cellProduto.textContent = produto;
+      cellQuantidade.textContent = quantidade;
+
+      document.getElementById("sku").value = "";
+      document.getElementById("nomeProduto").value = "";
+      document.getElementById("quantidade").value = "";
+    }
+
+    function atualizarEntrega() {
+      const tipo = document.getElementById("tipoEntrega").value;
+      const titulo = document.getElementById("tipoSelecionado");
+      const body = document.body;
+
+      body.className = "";
+      titulo.className = "titulo-checklist";
+
+      switch(tipo) {
+        case "COLETAS":
+          titulo.textContent = "🚚 Separação Mercado Livre - COLETAS";
+          titulo.classList.add("coletas-color");
+          body.classList.add("coletas");
+          break;
+        case "CORREIOS":
+          titulo.textContent = "📮 Separação Mercado Livre - CORREIOS";
+          titulo.classList.add("correios-color");
+          body.classList.add("correios");
+          break;
+        case "FLEX":
+          titulo.textContent = "🏍️ Separação Mercado Livre - FLEX";
+          titulo.classList.add("flex-color");
+          body.classList.add("flex");
+          break;
+        case "FULL":
+          titulo.textContent = "📨 Separação Mercado Livre - FULL";
+          titulo.classList.add("full-color");
+          body.classList.add("full");
+          break;
+        default:
+          titulo.textContent = "📦 Separação Mercado Livre";
+      }
+    }
+
+    function adicionarDataEnvio() {
+      const data = new Date();
+      const dia = String(data.getDate()).padStart(2, '0');
+      const mes = String(data.getMonth() + 1).padStart(2, '0');
+      const ano = data.getFullYear();
+      const dataFormatada = `${dia}/${mes}/${ano}`;
+
+      document.getElementById("dataEnvio").textContent = `Prazo para envio: ${dataFormatada}`;
+    }
+
+    window.onload = adicionarDataEnvio;
+  </script>
+</body>
+</html>
